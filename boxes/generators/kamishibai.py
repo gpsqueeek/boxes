@@ -87,7 +87,7 @@ class Kamishibai(_TopEdge):
             
     def boxFrontBackCallback (self, wi, hi, isFront):
         # window hole
-        self.rectangularHole(self.thickness*(self.FrameThickness + 2), self.thickness*self.FrameThickness, wi - self.thickness*self.FrameThickness*2, hi - self.thickness * (self.FrameThickness*2 + (2 if self.HandleThickness > 0 else 0)), self.FrameCornerRadius, False, False)
+        self.rectangularHole(self.thickness*(self.FrameThickness + 2), self.thickness*self.FrameThickness, wi - self.thickness*self.FrameThickness*2, hi - self.Margin - self.thickness * (self.FrameThickness*2 + (2 if self.HandleThickness > 0 else 0)), self.FrameCornerRadius, False, False)
         # finger holes for handle ceiling
         if self.HandleThickness > 0 :
             self.fingerHolesAt(self.thickness*2 , hi - self.thickness * 1.5, self.thickness*4,0)
@@ -418,13 +418,13 @@ class Kamishibai(_TopEdge):
         # sides
         if hasSubLayer :
             self.rectangularWall(wi, hi, "lmen", callback = [lambda:self.rectangularHole(wi/2, self.thickness*3.5, self.thickness, self.thickness),
-                                            lambda:self.rectangularHole(hi - self.thickness*4.5, wi/2, self.thickness, self.thickness)],move=move, label=label)
-            self.rectangularWall(wi - self.thickness*3, hi - self.thickness*5, "eeee", callback = [lambda:self.rectangularHole(wi/2 - self.thickness*1.5, self.thickness*1.5, self.thickness, self.thickness),
-                                            lambda:self.rectangularHole(hi - self.thickness*6.5, wi/2 - self.thickness*1.5, self.thickness, self.thickness)],move=move, label="side pannel inner")
-            self.rectangularWall(wi - self.thickness*3, hi - self.thickness*5, "eeee", callback = [lambda:self.rectangularHole(wi/2 - self.thickness*1.5, self.thickness*1.5, self.thickness, self.thickness),
-                                            lambda:self.rectangularHole(hi - self.thickness*6.5, wi/2 - self.thickness*1.5, self.thickness, self.thickness)],move=move, label="side pannel inner")
-            self.rectangularWall (self.thickness * 3, self.thickness, "eeee", move=move, label="")
-            self.rectangularWall (self.thickness * 3, self.thickness, "eeee", move=move, label="")
+                                            lambda:self.rectangularHole(hi - self.thickness*5.5, wi/2, self.thickness, self.thickness)],move=move, label=label)
+            self.rectangularWall(wi - self.Margin, hi - self.thickness*6, "eeee", callback = [lambda:self.rectangularHole(wi/2 - self.Margin/2, self.thickness*1.5, self.thickness, self.thickness),
+                                            lambda:self.rectangularHole(hi - self.thickness*7.5, wi/2 - self.Margin/2, self.thickness, self.thickness)],move=move, label="side pannel inner")
+            self.rectangularWall(wi - self.Margin, hi - self.thickness*6, "eeee", callback = [lambda:self.rectangularHole(wi/2 - self.Margin/2, self.thickness*1.5, self.thickness, self.thickness),
+                                            lambda:self.rectangularHole(hi - self.thickness*7.5, wi/2 - self.Margin/2, self.thickness, self.thickness)],move=move, label="side pannel inner")
+            self.rectangularWall (self.thickness, self.thickness * 3, "eeee", move=move, label="")
+            self.rectangularWall (self.thickness, self.thickness * 3, "eeee", move=move, label="")
         # back or front
         else :
             self.rectangularWall(wi, hi, "lmen", callback=[lambda:self.hole(wi/2, hi - self.thickness*4, d=self.thickness*4)],move=move, label=label)
@@ -603,7 +603,7 @@ class Kamishibai(_TopEdge):
         self.move(self.thickness*10, self.thickness*4, move, label="key")
             
     def render(self):
-       hi = self.SheetHeight + self.Margin + ((self.thickness*2) if self.HandleThickness > 0 else 0)
+       hi = self.SheetHeight + self.Margin * 2 + ((self.thickness*2) if self.HandleThickness > 0 else 0)
        wi = self.SheetWidth + self.Margin
        di = self.SheetsStackDepth + self.Margin
        
@@ -666,5 +666,4 @@ class Kamishibai(_TopEdge):
        
        # back panel cover
        self.coverPanel1Lid (wi, hi, False, move="up", label="back panel")
-       
        
