@@ -167,7 +167,25 @@ class Kamishibai(_TopEdge):
         ScrewsLocking_group.add_argument(
             "--LockScrewExtraFeetDistanceFromBorder",  action="store", type=float, default=7.0,
             help="Distance from the border for the axis of the extra feet at the corners, in mm (set to 0 for no screws)")
-
+        Extension_group = self.argparser.add_argument_group("Extionsion for electronics integration, i.e. lights")
+        Extension_group.add_argument(
+            "--ExtensionHeight",  action="store", type=float, default=0.0,
+            help="Extension height in millimeters ; set to 0 for no extension, or at least 6 times the material thickness")
+        Extension_group.add_argument(
+            "--BackExtraHoles",  action="store", type=str, default="R 20 15 11.5 8\nC 11.58 15 3\nC 28.42 15 3",
+            help="back pannel: extra holes for connectors or buttons ; enter one line per hole; first parameter should be R for rectangle or C for circle; then X and Y position for the center of the hole, and then the X and Y size of the rectangle or the circle diameter, all in mm; parameters should be separated by spaces")
+        Extension_group.add_argument(
+            "--FrontExtraHoles",  action="store", type=str, default="R 20 15 11.5 8\nC 11.58 15 3\nC 28.42 15 3",
+            help="front panel: extra holes for connectors or buttons ; enter one line per hole; first parameter should be R for rectangle or C for circle; then X and Y position for the center of the hole, and then the X and Y size of the rectangle or the circle diameter, all in mm; parameters should be separated by spaces")
+        Extension_group.add_argument(
+            "--BottomExtraHoles",  action="store", type=str, default="R 20 15 11.5 8\nC 11.58 15 3\nC 28.42 15 3",
+            help="bottom panel: extra holes for internal devices attachement (e.g. PCBs) ; enter one line per hole; first parameter should be R for rectangle or C for circle; then X and Y position for the center of the hole, and then the X and Y size of the rectangle or the circle diameter, all in mm; parameters should be separated by spaces")
+        Extension_group.add_argument(
+            "--ExtensionDoorScrewDiameter",  action="store", type=float, default=3.0,
+            help="Diameter of the screw holes in mm (set to 0 for no screws)")
+        Extension_group.add_argument(
+            "--ExtensionDoorNutWidth",  action="store", type=float, default=5.5,
+            help="Width of the locking nuts in mm")
 
     def screwAttachement (self, LockScrewLength):
         self.polyline(0, 90, self.thickness, 90, self.LockNutWidth/2 - self.LockScrewDiameter/2, -90,
@@ -178,13 +196,45 @@ class Kamishibai(_TopEdge):
 
     def boxFrontBackCallback (self, wi, hi, isFront):
         # window hole
-        self.rectangularHole(self.thickness*2 + self.FrameThickness, self.FrameThickness, wi - self.FrameThickness*2, hi - self.Margin - self.FrameThickness*2 - self.thickness * (2 if self.HandleThickness > 0 else 0), self.FrameCornerRadius, False, False)
+        if self.ExtensionHeight > 0 :
+            self.rectangularHole(self.thickness*2 + self.FrameThickness, self.FrameThickness + self.ExtensionHeight + self.thickness, wi - self.FrameThickness*2, hi - self.Margin - self.FrameThickness*2 - self.ExtensionHeight - self.thickness * (3 if self.HandleThickness > 0 else 1), self.FrameCornerRadius, False, False)
+        else :
+            self.rectangularHole(self.thickness*2 + self.FrameThickness, self.FrameThickness, wi - self.FrameThickness*2, hi - self.Margin - self.FrameThickness*2 - self.thickness * (2 if self.HandleThickness > 0 else 0), self.FrameCornerRadius, False, False)
         # finger holes for handle ceiling
         if self.HandleThickness > 0 :
             self.fingerHolesAt(self.thickness*2 , hi - self.thickness * 1.5, self.thickness*4,0)
             self.fingerHolesAt(wi - self.thickness*2 , hi - self.thickness * 1.5, self.thickness*4,0)
             self.fingerHolesAt(wi/2 - self.HandleWidth/2 - self.thickness*0, hi - self.thickness * 1.5, self.thickness*4,0)
             self.fingerHolesAt(wi/2 + self.HandleWidth/2 - self.thickness*0, hi - self.thickness * 1.5, self.thickness*4,0)
+        # finger holes for extension separator
+        if self.ExtensionHeight > 0 :
+            self.fingerHolesAt(self.thickness*2 , self.ExtensionHeight + self.thickness * 0.5, self.thickness*4,0)
+            self.fingerHolesAt(wi - self.thickness*2 , self.ExtensionHeight + self.thickness * 0.5, self.thickness*4,0)
+            self.fingerHolesAt(wi/2 - self.HandleWidth/2 - self.thickness*0, self.ExtensionHeight + self.thickness * 0.5, self.thickness*4,0)
+            self.fingerHolesAt(wi/2 + self.HandleWidth/2 - self.thickness*0, self.ExtensionHeight + self.thickness * 0.5, self.thickness*4,0)
+            if isFront :
+                # custom holes
+                if len(self.FrontExtraHoles) > 0 :
+                    for line in self.FrontExtraHoles.split("\n") :
+                        holeParams=line.split(" ")
+                        # rectangular hole
+                        if line[0] == "R" :
+                            self.rectangularHole(float(holeParams[1]) + self.thickness*2, float(holeParams[2]), float(holeParams[3]), float(holeParams[4]))
+                        # round hole
+                        elif line[0] == "C" :
+                            self.hole(float(holeParams[1]) + self.thickness*2, float(holeParams[2]), float(holeParams[3])/2)
+            else :
+                # bay opening on the back side
+                self.rectangularHole(wi/2 + self.thickness * 2, (self.ExtensionHeight + max (0, self.BottomLockScrewLength - self.thickness))/2, wi - self.thickness * 12, self.ExtensionHeight - self.thickness * 2 - max (0, self.BottomLockScrewLength - self.thickness) - self.Margin * 2, 0, True, True)
+                # bay door attachement screw holes
+                self.hole(self.thickness * 6, (self.ExtensionHeight + max (0, self.BottomLockScrewLength - self.thickness))/2, self.ExtensionDoorScrewDiameter/2)
+                self.hole(wi - self.thickness * 2, (self.ExtensionHeight + max (0, self.BottomLockScrewLength - self.thickness))/2, self.ExtensionDoorScrewDiameter/2)
+                # internal nut plate attachement
+                self.rectangularHole(self.thickness * 3.5, self.thickness * 1.5 + max (0, self.BottomLockScrewLength - self.thickness), self.thickness, self.thickness, 0, False, False)
+                self.rectangularHole(self.thickness * 3.5, self.ExtensionHeight - self.thickness * 2.5, self.thickness, self.thickness, 0, False, False)
+                self.rectangularHole(wi - self.thickness * 0.5, self.thickness * 1.5 + max (0, self.BottomLockScrewLength - self.thickness), self.thickness, self.thickness, 0, False, False)
+                self.rectangularHole(wi - self.thickness * 0.5, self.ExtensionHeight - self.thickness * 2.5, self.thickness, self.thickness, 0, False, False)
+
         # finger holes for extra depth
         if (isFront and self.FrontExtraDepth > 0) or not isFront :
             self.fingerHolesAt(self.thickness*1.5, self.thickness*0, hi)
@@ -341,6 +391,16 @@ class Kamishibai(_TopEdge):
                 posx += x
                 self.hole(posx, di + self.thickness*(self.FrontExtraDepth + self.BackExtraDepth + 4) - self.HingeHolesBoxEdgeDistance, self.HingeHolesDiameter/2)
                 self.hole(wi + self.thickness*8 - posx, di + self.thickness*(self.FrontExtraDepth + self.BackExtraDepth + 4) - self.HingeHolesBoxEdgeDistance, self.HingeHolesDiameter/2)
+        # custom holes
+        if (not isTop) and (self.ExtensionHeight > 0) and (len(self.BottomExtraHoles) > 0) :
+            for line in self.BottomExtraHoles.split("\n") :
+                holeParams=line.split(" ")
+                # rectangular hole
+                if line[0] == "R" :
+                    self.rectangularHole(float(holeParams[1]) + self.thickness*4, float(holeParams[2]), float(holeParams[3]), float(holeParams[4]))
+                # round hole
+                elif line[0] == "C" :
+                    self.hole(float(holeParams[1]) + self.thickness*4, float(holeParams[2]), float(holeParams[3])/2)
         # plate
         # back side
         self.moveTo(self.thickness*2, 0)
@@ -524,6 +584,61 @@ class Kamishibai(_TopEdge):
                     di/2 - self.HandleThickness* self.thickness/2, 90)
         # move plate
         self.move(wi+ self.thickness, di+ self.thickness*4, move, label="handle ceiling")
+
+    def ExtensionSeparator(self, wi, di, move=None, label=""):
+        if self.move(wi+ self.thickness, di+ self.thickness*4, move, True):
+            return
+        self.moveTo(0, self.thickness*2)
+        #bottom
+        self.edges["f"](self.thickness*4)
+        self.edge(wi/2 - self.HandleWidth/2 - self.thickness*6)
+        self.edges["f"](self.thickness*4)
+        self.edge(self.HandleWidth - self.thickness*4)
+        self.edges["f"](self.thickness*4)
+        self.edge(wi/2 - self.HandleWidth/2 - self.thickness*6)
+        self.edges["f"](self.thickness*4)
+        self.corner(90)
+        #right
+        self.edge(di)
+        self.corner(90)
+        #top
+        self.edges["f"](self.thickness*4)
+        self.edge(wi/2 - self.HandleWidth/2 - self.thickness*6)
+        self.edges["f"](self.thickness*4)
+        self.edge(self.HandleWidth - self.thickness*4)
+        self.edges["f"](self.thickness*4)
+        self.edge(wi/2 - self.HandleWidth/2 - self.thickness*6)
+        self.edges["f"](self.thickness*4)
+        self.corner(90)
+        #left
+        self.edge(di)
+        self.corner(90)
+        # move plate
+        self.move(wi+ self.thickness, di+ self.thickness*4, move, label="Extension separator")
+
+    def ExtentionInternalPlateCallBack(self, hi, hasNut):
+        # fixing holes
+        self.rectangularHole(self.thickness * 1.5, self.thickness * 1.5, self.thickness, self.thickness, 0, False, False)
+        self.rectangularHole(self.thickness * 1.5, hi - self.thickness * 1.5, self.thickness, self.thickness, 0, False, False)
+        if hasNut :
+            self.regularPolygonHole(self.thickness * 4, hi/2 + self.thickness/2, d=self.ExtensionDoorNutWidth * 0.5 * math.sqrt(3), n=6)
+        else :
+            self.hole(self.thickness * 4, hi/2 + self.thickness/2, d=self.ExtensionDoorScrewDiameter)
+    
+    def ExtensionDoorCallBack(self, wi):
+        # screw holes
+        self.hole(self.thickness*3.5, (self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness))/2, self.ExtensionDoorScrewDiameter/2)
+        self.hole(wi - self.thickness*4.5, (self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness))/2, self.ExtensionDoorScrewDiameter/2)
+        # custom holes
+        if len(self.BackExtraHoles) > 0 :
+            for line in self.BackExtraHoles.split("\n") :
+                holeParams=line.split(" ")
+                # rectangular hole
+                if line[0] == "R" :
+                    self.rectangularHole(float(holeParams[1]), float(holeParams[2]), float(holeParams[3]), float(holeParams[4]))
+                # round hole
+                elif line[0] == "C" :
+                    self.hole(float(holeParams[1]), float(holeParams[2]), float(holeParams[3])/2)
 
     def coverPanel1Lid (self, wi, hi, hasSubLayer = False, move=None, label=""):
         # sides
@@ -727,7 +842,9 @@ class Kamishibai(_TopEdge):
         self.move(self.thickness*10, self.thickness*4, move, label="key")
 
     def render(self):
-       hi = self.SheetHeight + self.Margin * 2 + ((self.thickness*2) if self.HandleThickness > 0 else 0)
+       if self.ExtensionHeight > 0 and self.ExtensionHeight < self.thickness * 6 :
+          self.ExtensionHeight = self.thickness * 6
+       hi = self.SheetHeight + self.Margin * 2 + ((self.thickness*2) if self.HandleThickness > 0 else 0) + ((self.ExtensionHeight + self.thickness) if self.ExtensionHeight > 0 else 0)
        wi = self.SheetWidth + self.Margin
        di = self.SheetsStackDepth + self.Margin
 
@@ -737,6 +854,15 @@ class Kamishibai(_TopEdge):
            self.FrontExtraDepth = 3
        if self.BackExtraDepth < 1 :
            self.BackExtraDepth = 1
+       if self.LockScrewDiameter == 0 :
+           self.TopLockScrewLength = 0
+           self.BottomLockScrewLength = 0
+           self.DoorFeetScrewLength = 0
+           self.LockNutThickness = 0
+           self.LockNutWidth = 0
+           self.LockScrewDistanceFromBorder = 0
+           self.LockScrewExtraFeetScewDiameter = 0
+           self.LockScrewExtraFeetDistanceFromBorder = 0
        self.ctx.save()
 
        # front
@@ -760,6 +886,22 @@ class Kamishibai(_TopEdge):
        # top handle
        if self.HandleThickness > 0 and self.HandleWidth > 0 :
            self.topHandle (wi, di, move="up", label="top handle")
+
+       if self.ExtensionHeight > 0 :
+           # extension separator
+           self.ExtensionSeparator(wi, di, move="up", label="extension separator")
+           # extension door plate
+           self.rectangularWall(wi - self.thickness, self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), callback=[
+                            lambda:self.ExtensionDoorCallBack(wi)],  move="up", label="Extension door")
+           # door inner attachement plates
+           self.rectangularWall(self.thickness*5,self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), callback=[self.ExtentionInternalPlateCallBack(self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), True)], move="up", label="extention\nwith nut")
+           self.rectangularWall(self.thickness*5,self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), callback=[self.ExtentionInternalPlateCallBack(self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), False)], move="up", label="extention\ncover")
+           self.rectangularWall (self.thickness * 3, self.thickness + self.PegsWidthMargin, "eeee", move="up", label="")
+           self.rectangularWall (self.thickness * 3, self.thickness + self.PegsWidthMargin, "eeee", move="up", label="")
+           self.rectangularWall(self.thickness*5,self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), callback=[self.ExtentionInternalPlateCallBack(self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), True)], move="up", label="extention\nwith nut")
+           self.rectangularWall(self.thickness*5,self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), callback=[self.ExtentionInternalPlateCallBack(self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), False)], move="up", label="extention\ncover")
+           self.rectangularWall (self.thickness * 3, self.thickness + self.PegsWidthMargin, "eeee", move="up", label="")
+           self.rectangularWall (self.thickness * 3, self.thickness + self.PegsWidthMargin, "eeee", move="up", label="")
 
        # front panel cover
        # two-part lid hinge eyes (both ends)
