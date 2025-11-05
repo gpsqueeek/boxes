@@ -225,7 +225,7 @@ class Kamishibai(_TopEdge):
                             self.hole(float(holeParams[1]) + self.thickness*2, float(holeParams[2]), float(holeParams[3])/2)
             else :
                 # bay opening on the back side
-                self.rectangularHole(wi/2 + self.thickness * 2, (self.ExtensionHeight + max (0, self.BottomLockScrewLength - self.thickness))/2, wi - self.thickness * 12, self.ExtensionHeight - self.thickness * 2 - max (0, self.BottomLockScrewLength - self.thickness) - self.Margin * 2, 0, True, True)
+                self.rectangularHole(wi/2 + self.thickness * 2, (self.ExtensionHeight + max (0, self.BottomLockScrewLength - self.thickness))/2, wi - self.thickness * 11, self.ExtensionHeight - self.thickness * 2 - max (0, self.BottomLockScrewLength - self.thickness) - self.Margin * 2, 0, True, True)
                 # bay door attachement screw holes
                 self.hole(self.thickness * 6, (self.ExtensionHeight + max (0, self.BottomLockScrewLength - self.thickness))/2, self.ExtensionDoorScrewDiameter/2)
                 self.hole(wi - self.thickness * 2, (self.ExtensionHeight + max (0, self.BottomLockScrewLength - self.thickness))/2, self.ExtensionDoorScrewDiameter/2)
@@ -356,6 +356,10 @@ class Kamishibai(_TopEdge):
             self.fingerHolesAt(self.thickness*2, self.thickness * (self.BackExtraDepth + 2.5), wi + self.thickness*4,0)
             if self.FrontExtraDepth > 0 :
                 self.fingerHolesAt(self.thickness*2, di + self.thickness * (self.BackExtraDepth + 3.5), wi + self.thickness*4,0)
+        # finger holes for extension bottom
+        if ((not isTop) and (self.ExtensionHeight > 0)):
+            self.fingerHolesAt(self.thickness * 4.5, self.thickness * (self.BackExtraDepth + 5), di - self.thickness*4, angle=90)
+            self.fingerHolesAt(wi + self.thickness * 2.5, self.thickness * (self.BackExtraDepth + 5), di - self.thickness*4, angle=90)
         # finger holes for sides
         # back
         if isTop :
@@ -395,12 +399,12 @@ class Kamishibai(_TopEdge):
         if (not isTop) and (self.ExtensionHeight > 0) and (len(self.BottomExtraHoles) > 0) :
             for line in self.BottomExtraHoles.split("\n") :
                 holeParams=line.split(" ")
-                # rectangular hole
+                # rectangular hole #TODO fix height
                 if line[0] == "R" :
-                    self.rectangularHole(float(holeParams[1]) + self.thickness*4, float(holeParams[2]), float(holeParams[3]), float(holeParams[4]))
-                # round hole
+                    self.rectangularHole(float(holeParams[1]) + self.thickness*4, float(holeParams[2]) + self.thickness * (self.BackExtraDepth - 1), float(holeParams[3]), float(holeParams[4]))
+                # round hole #TODO fix height
                 elif line[0] == "C" :
-                    self.hole(float(holeParams[1]) + self.thickness*4, float(holeParams[2]), float(holeParams[3])/2)
+                    self.hole(float(holeParams[1]) + self.thickness*4, float(holeParams[2]) + self.thickness * (self.BackExtraDepth - 1), float(holeParams[3])/2)
         # plate
         # back side
         self.moveTo(self.thickness*2, 0)
@@ -589,7 +593,11 @@ class Kamishibai(_TopEdge):
         if self.move(wi+ self.thickness, di+ self.thickness*4, move, True):
             return
         self.moveTo(0, self.thickness*2)
+        # holes for sides
+        self.fingerHolesAt(self.thickness*1.5, self.thickness * 2, di - self.thickness * 4)
+        self.fingerHolesAt(wi - self.thickness*0.5, self.thickness * 2, di - self.thickness * 4)
         #bottom
+        self.edge(self.thickness)
         self.edges["f"](self.thickness*4)
         self.edge(wi/2 - self.HandleWidth/2 - self.thickness*6)
         self.edges["f"](self.thickness*4)
@@ -597,11 +605,13 @@ class Kamishibai(_TopEdge):
         self.edges["f"](self.thickness*4)
         self.edge(wi/2 - self.HandleWidth/2 - self.thickness*6)
         self.edges["f"](self.thickness*4)
+        self.edge(self.thickness)
         self.corner(90)
         #right
         self.edge(di)
         self.corner(90)
         #top
+        self.edge(self.thickness)
         self.edges["f"](self.thickness*4)
         self.edge(wi/2 - self.HandleWidth/2 - self.thickness*6)
         self.edges["f"](self.thickness*4)
@@ -609,6 +619,7 @@ class Kamishibai(_TopEdge):
         self.edges["f"](self.thickness*4)
         self.edge(wi/2 - self.HandleWidth/2 - self.thickness*6)
         self.edges["f"](self.thickness*4)
+        self.edge(self.thickness)
         self.corner(90)
         #left
         self.edge(di)
@@ -887,9 +898,13 @@ class Kamishibai(_TopEdge):
        if self.HandleThickness > 0 and self.HandleWidth > 0 :
            self.topHandle (wi, di, move="up", label="top handle")
 
+       # extension
        if self.ExtensionHeight > 0 :
            # extension separator
            self.ExtensionSeparator(wi, di, move="up", label="extension separator")
+           # extension sides
+           self.rectangularWall(di - self.thickness*4, self.ExtensionHeight, "fefe", move="up", label="extension side")
+           self.rectangularWall(di - self.thickness*4, self.ExtensionHeight, "fefe", move="up", label="extension side")
            # extension door plate
            self.rectangularWall(wi - self.thickness, self.ExtensionHeight - self.thickness - max(0, self.BottomLockScrewLength - self.thickness), callback=[
                             lambda:self.ExtensionDoorCallBack(wi)],  move="up", label="Extension door")
