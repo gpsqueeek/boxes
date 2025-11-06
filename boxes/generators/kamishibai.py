@@ -16,6 +16,7 @@
 from boxes import *
 from boxes.lids import _TopEdge
 from boxes.edges import HingeSettings
+from boxes.edges import SlideOnLidSettings
 
 class Kamishibai(_TopEdge):
     """Kamishibai butai (japanese image theatre)"""
@@ -265,7 +266,7 @@ class Kamishibai(_TopEdge):
             self.boxFrontBackCallback(wi, hi, isFront)
             self.moveTo(-self.thickness*2, 0)
             #bottom
-            self.edge(self.thickness*2)
+            self.edge(self.thickness * 2)
             self.edges["f"](self.thickness*(self.LockScrewDistanceFromBorder - 3) - self.LockScrewDiameter)
             self.edge(self.LockScrewDiameter/2)
             self.screwAttachement(self.BottomLockScrewLength - self.thickness)
@@ -279,12 +280,12 @@ class Kamishibai(_TopEdge):
             self.screwAttachement(self.BottomLockScrewLength - self.thickness)
             self.edge(self.LockScrewDiameter/2)
             self.edges["f"](self.thickness*(self.LockScrewDistanceFromBorder - 3) - self.LockScrewDiameter)
-            self.polyline(self.thickness*2, 90)
+            self.polyline(self.thickness * 2, 90)
             #right
             self.edges["N"](hi)
             self.corner(90)
             #top
-            self.edges["f"](self.thickness*(self.LockScrewDistanceFromBorder - 3) - self.LockScrewDiameter)
+            self.edges["f"](self.thickness*(self.LockScrewDistanceFromBorder - 3 - edges.SlideOnLidSettings.relative_params["play"]) - self.LockScrewDiameter)
             self.edge(self.LockScrewDiameter/2)
             self.screwAttachement(self.TopLockScrewLength - self.thickness)
             self.edge(self.LockScrewDiameter/2)
@@ -296,7 +297,7 @@ class Kamishibai(_TopEdge):
             self.edge(self.LockScrewDiameter/2)
             self.screwAttachement(self.TopLockScrewLength - self.thickness)
             self.edge(self.LockScrewDiameter/2)
-            self.edges["f"](self.thickness*(self.LockScrewDistanceFromBorder - 3) - self.LockScrewDiameter)
+            self.edges["f"](self.thickness*(self.LockScrewDistanceFromBorder - 3 - edges.SlideOnLidSettings.relative_params["play"]) - self.LockScrewDiameter)
             self.corner(90)
             #left
             self.edges["M"](hi)
