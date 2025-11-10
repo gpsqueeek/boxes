@@ -207,8 +207,9 @@ class Kamishibai(_TopEdge):
             self.fingerHolesAt(wi - self.thickness*2 , hi - self.thickness * 1.5, self.thickness*4,0)
             self.fingerHolesAt(wi/2 - self.HandleWidth/2 - self.thickness*0, hi - self.thickness * 1.5, self.thickness*4,0)
             self.fingerHolesAt(wi/2 + self.HandleWidth/2 - self.thickness*0, hi - self.thickness * 1.5, self.thickness*4,0)
-        # finger holes for extension separator
+        # holes for extension
         if self.ExtensionHeight > 0 :
+            # finger holes for extension separator
             self.fingerHolesAt(self.thickness*2 , self.ExtensionHeight + self.thickness * 0.5, self.thickness*4,0)
             self.fingerHolesAt(wi - self.thickness*2 , self.ExtensionHeight + self.thickness * 0.5, self.thickness*4,0)
             self.fingerHolesAt(wi/2 - self.HandleWidth/2 - self.thickness*0, self.ExtensionHeight + self.thickness * 0.5, self.thickness*4,0)
@@ -410,21 +411,21 @@ class Kamishibai(_TopEdge):
         # back side
         self.moveTo(self.thickness*2, 0)
         if isTop :
-            self.polyline(self.thickness, 90, self.thickness * 2, -90, wi + self.thickness*2, -90,
-                            self.thickness * 2, 90, self.thickness, [90, self.thickness*2])
+            self.polyline(self.thickness - self.Margin/2, 90, self.thickness * 2, -90, wi + self.thickness*2 + self.Margin, -90,
+                            self.thickness * 2, 90, self.thickness - self.Margin/2, [90, self.thickness*2])
         else :
             self.edge(self.thickness * 2)
             self.edges["L"](wi)
             self.polyline(self.thickness * 2, [90, self.thickness*2])
         # right side
         if isTop :
-            self.polyline(self.thickness * self.BackExtraDepth, 90, self.thickness*2, -90, di + self.thickness*2, 0)
+            self.polyline(self.thickness * self.BackExtraDepth - self.Margin/2, 90, self.thickness*2, -90, di + self.thickness*2 + self.Margin, 0)
             if self.FrontExtraDepth > 0 :
                 self.polyline(0, -90, self.thickness*2, 90)
                 if self.FrontCoverStyle == "slide-on lid" :
-                    self.edge(self.thickness * (self.FrontExtraDepth - 0))
+                    self.edge(self.thickness * (self.FrontExtraDepth - 0) - self.Margin/2)
                 else :
-                    self.edge(self.thickness * self.FrontExtraDepth)
+                    self.edge(self.thickness * self.FrontExtraDepth - self.Margin/2)
         else :
             self.edge(self.thickness * (self.BackExtraDepth + 1))
             self.edges["L"](di)
@@ -444,8 +445,8 @@ class Kamishibai(_TopEdge):
                 self.corner(90)
             elif self.FrontCoverStyle == "slide-on lid" :
                 if isTop :
-                    self.polyline(self.thickness, 90, self.thickness * 2, -90, wi + self.thickness*2, -90,
-                                    self.thickness * 2, 90, self.thickness, [90, self.thickness*2])
+                    self.polyline(self.thickness - self.Margin/2, 90, self.thickness * 2, -90, wi + self.thickness*2 + self.Margin, -90,
+                                    self.thickness * 2, 90, self.thickness - self.Margin/2, [90, self.thickness*2])
                 else :
                     self.edge(self.thickness * 2)
                     self.edges["L"](wi)
@@ -463,11 +464,11 @@ class Kamishibai(_TopEdge):
         if isTop :
             if self.FrontExtraDepth > 0 :
                 if self.FrontCoverStyle == "slide-on lid" :
-                    self.polyline(self.thickness * (self.FrontExtraDepth - 0), 90)
+                    self.polyline(self.thickness * (self.FrontExtraDepth - 0) - self.Margin/2, 90)
                 else :
-                    self.polyline(self.thickness * self.FrontExtraDepth, 90)
+                    self.polyline(self.thickness * self.FrontExtraDepth - self.Margin/2, 90)
                 self.polyline(self.thickness*2, -90)
-            self.polyline(di + self.thickness*2, -90, self.thickness*2, 90, self.thickness * self.BackExtraDepth, 0)
+            self.polyline(di + self.thickness*2 + self.Margin, -90, self.thickness*2, 90, self.thickness * self.BackExtraDepth - self.Margin/2, 0)
         else :
             if self.FrontCoverStyle == "slide-on lid" :
                 self.edge(self.thickness * (1 + self.FrontExtraDepth))
