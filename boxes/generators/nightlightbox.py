@@ -20,7 +20,22 @@ class NightLightBox(_TopEdge):
     """Simple decorative lamp with creatively laser cut plates"""
 
     ui_group = "Misc"
-    description = "This is a simple light box with a closed compartment for electronics and the backlighting."
+    description = """
+    This is a multiplate light box with a closed compartment for electronics and the backlighting.
+    The box offers thte possibility to be either definitively mounted (glued or forced in), or screwed
+    (if the LockScrewDiameter is more than 0 mm).
+    For assembling the box, please follow the following steps:
+    1. Insert the rails in the bottom plate
+    2. Insert the diffuser plate
+    3. Insert one side
+    4. Insert the electronics comparment top in the side
+    5. Add (and glue if needed) the hinge rings to the lid top and insert it in the side
+    6. Add the other side
+    7. Insert the front plate
+    8. Mount the eletronics in the electronics compartment and / or on the back plate
+    9. Insert the back plate
+    10. Add the nuts and screws to hold everything together if needed
+    """
 
     def __init__(self) -> None:
         Boxes.__init__(self)
@@ -63,7 +78,7 @@ class NightLightBox(_TopEdge):
             help="Margin for moving parts in mm")
         BackSideOptions_group = self.argparser.add_argument_group("Night lightbox options for the back side (holes for connectors, marking)")
         BackSideOptions_group.add_argument(
-            "--BackExtraHoles",  action="store", type=str, default="R 25 20 11.5 8\nC 16.58 20 3\nC 33.42 20 3",
+            "--BackExtraHoles",  action="store", type=str, default="R 20 10 11.5 8\nC 11.58 10 3\nC 28.42 10 3",
             help="extra holes for connectors or buttons ; enter one line per hole ; first parameter should be R for rectangle or C for circle ; then X and Y position for the center of the hole, and then the X and Y size of the rectangle or the circle diameter, all in mm ; parameters should be separated by spaces")
         ScrewsLocking_group = self.argparser.add_argument_group("Screws parameters for attaching the pieces together")
         ScrewsLocking_group.add_argument(
@@ -213,11 +228,12 @@ class NightLightBox(_TopEdge):
             return
         # bottom
         self.edges["f"](t*2 + self.DiffuserPlateThickness + (self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount)
-        self.corner(90)
+        self.polyline(self.InterPlateSpacing - t - self.Margin/2, 90)
         # right side
-        self.polyline(t*2, 90)
+        self.edges["f"](t*2)
+        self.corner(90)
         # top
-        self.polyline(t - self.Margin/2, 90)
+        self.polyline(self.InterPlateSpacing - self.Margin, 90)
         for i in range(self.WoodPlatesCount):
             self.polyline(t + self.Margin, -90, self.WoodPlateThickness + self.Margin, -90,
                         t + self.Margin, 90, self.InterPlateSpacing - self.Margin, 90)
@@ -231,60 +247,105 @@ class NightLightBox(_TopEdge):
     def frontExtraHoles(self):
         t = self.thickness
         # main window, bottom and sides attachements
-        if self.BoxStyle == "minimalist" : #TODO : update
-            self.rectangularHole(self.PlateVisibleWidth/2 + t*5 + self.Margin/2,self.PlateVisibleHeight/2 + t*6,self.PlateVisibleWidth, self.PlateVisibleHeight, self.WindowCorner)
-            self.fingerHolesAt(t/2, t * 2, self.PlateVisibleHeight + t * 8 + self.Margin)
-            self.fingerHolesAt(self.PlateVisibleWidth + t*9.5 + self.Margin, t * 2, self.PlateVisibleHeight + t * 8 + self.Margin)
-            self.fingerHolesAt(t, self.edges["s"].endwidth() - t*2.5, t * 8 + self.PlateVisibleWidth + self.Margin, angle=0)
-        else:
-            self.rectangularHole(self.PlateVisibleWidth/2 + t*5 + self.Margin/2,self.PlateVisibleHeight/2 + t*6,self.PlateVisibleWidth, self.PlateVisibleHeight, self.WindowCorner)
-            self.fingerHolesAt(t, self.edges["s"].endwidth() - t*2.5, t * 8 + self.PlateVisibleWidth + self.Margin, angle=0)
+        if self.BoxStyle == "minimalist" :
+            self.rectangularHole(self.PlateVisibleWidth/2 + t*4 + self.Margin/2,self.PlateVisibleHeight/2 + t*6,self.PlateVisibleWidth, self.PlateVisibleHeight, self.WindowCorner)
+            self.fingerHolesAt(t*1, self.edges["s"].endwidth() - t*0.5, t * 6 + self.PlateVisibleWidth + self.Margin, angle=0)
             if self.LockScrewDiameter > 0 :
-                self.fingerHolesAt(t/2, t * 2, self.PlateVisibleHeight/2 + t * 4 + self.Margin/2 - self.LockScrewDiameter/2)
-                self.fingerHolesAt(t/2, self.PlateVisibleHeight/2 + t * 6 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 4 + self.Margin/2 - self.LockScrewDiameter/2)
-                self.hole(t/2, self.PlateVisibleHeight/2 + t * 6 + self.Margin/2, self.LockScrewDiameter/2)
-                self.fingerHolesAt(self.PlateVisibleWidth + t*9.5 + self.Margin, t * 2, self.PlateVisibleHeight/2 + t * 4 + self.Margin/2 - self.LockScrewDiameter/2)
-                self.fingerHolesAt(self.PlateVisibleWidth + t*9.5 + self.Margin, self.PlateVisibleHeight/2 + t * 6 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 4 + self.Margin/2 - self.LockScrewDiameter/2)
-                self.hole(self.PlateVisibleWidth + t*9.5 + self.Margin, self.PlateVisibleHeight/2 + t * 6 + self.Margin/2, self.LockScrewDiameter/2)
+                self.fingerHolesAt(t*1.5, t * 4, self.PlateVisibleHeight/2 + t * 2 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.fingerHolesAt(t*1.5, self.PlateVisibleHeight/2 + t * 6 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 2 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.hole(t*1.5, self.PlateVisibleHeight/2 + t * 6 + self.Margin/2, self.LockScrewDiameter/2)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*6.5 + self.Margin, t * 4, self.PlateVisibleHeight/2 + t * 2 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*6.5 + self.Margin, self.PlateVisibleHeight/2 + t * 6 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 2 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.hole(self.PlateVisibleWidth + t*6.5 + self.Margin, self.PlateVisibleHeight/2 + t * 6 + self.Margin/2, self.LockScrewDiameter/2)
             else :
-                self.fingerHolesAt(t/2, t * 2, self.PlateVisibleHeight + t * 8 + self.Margin)
-                self.fingerHolesAt(self.PlateVisibleWidth + t*9.5 + self.Margin, t * 2, self.PlateVisibleHeight + t * 8 + self.Margin)
-        #extra holes for attachement pegs for extra customizable face
-        if self.BoxStyle == "extra customizable face" : #TODO : check
-            self.rectangularHole(t*1.5, t*1.5, t, t)
-            self.rectangularHole(self.PlateVisibleWidth/2 + t*4 + self.Margin/2, t*1.5, t, t)
-            self.rectangularHole(self.PlateVisibleHeight + t*6.5 + self.Margin, t*1.5, t, t)
+                self.fingerHolesAt(t*1.5, t * 4, self.PlateVisibleHeight + t * 4 + self.Margin)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*6.5 + self.Margin, t * 4, self.PlateVisibleHeight + t * 4 + self.Margin)
+        else:
+            self.rectangularHole(self.PlateVisibleWidth/2 + t*6 + self.Margin/2,self.PlateVisibleHeight/2 + t*8,self.PlateVisibleWidth, self.PlateVisibleHeight, self.WindowCorner)
+            self.fingerHolesAt(t*2, self.edges["s"].endwidth() - t*0.5, t * 8 + self.PlateVisibleWidth + self.Margin, angle=0)
+            if self.LockScrewDiameter > 0 :
+                self.fingerHolesAt(t*1.5, t * 4, self.PlateVisibleHeight/2 + t * 4 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.fingerHolesAt(t*1.5, self.PlateVisibleHeight/2 + t * 8 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 4 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.hole(t*1.5, self.PlateVisibleHeight/2 + t * 8 + self.Margin/2, self.LockScrewDiameter/2)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*10.5 + self.Margin, t * 4, self.PlateVisibleHeight/2 + t * 4 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*10.5 + self.Margin, self.PlateVisibleHeight/2 + t * 8 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 4 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.hole(self.PlateVisibleWidth + t*10.5 + self.Margin, self.PlateVisibleHeight/2 + t * 8 + self.Margin/2, self.LockScrewDiameter/2)
+            else :
+                self.fingerHolesAt(t*1.5, t * 4, self.PlateVisibleHeight + t * 8 + self.Margin)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*10.5 + self.Margin, t * 4, self.PlateVisibleHeight + t * 8 + self.Margin)
+        # holes for rails attachement #TODO
+        if self.BoxStyle == "minimalist" :
+            a=1
+        else :
+            self.fingerHolesAt(t*3.5, self.edges["s"].endwidth(), t*2)
+            self.fingerHolesAt(self.PlateVisibleWidth + t*8.5 + self.Margin, self.edges["s"].endwidth(), t*2)
+        # extra holes for attachement pegs for extra customizable face
+        if self.BoxStyle == "extra customizable face" :
+            self.rectangularHole(t*5.5, t*5.5, t, t)
+            self.rectangularHole(self.PlateVisibleWidth + t*6.5 + self.Margin, t*5.5, t, t)
+            self.rectangularHole(self.PlateVisibleWidth/2 + self.Margin/2 + t*6, self.PlateVisibleHeight + t*10.5 + self.Margin, t, t)
 
     def backExtraHoles(self):
         t = self.thickness
         # bottom attachement
-        self.fingerHolesAt(t, self.edges["s"].endwidth() - t*2.5, t * 8 + self.PlateVisibleWidth + self.Margin, angle=0)
+        if self.BoxStyle == "minimalist" :
+            self.fingerHolesAt(t*2, self.edges["s"].endwidth() - t*0.5, t * 4 + self.PlateVisibleWidth + self.Margin, angle=0)
+        else :
+            self.fingerHolesAt(t*2, self.edges["s"].endwidth() - t*0.5, t * 8 + self.PlateVisibleWidth + self.Margin, angle=0)
         # sides attachements
-        if self.BoxStyle == "minimalist" : #TODO : update
-            self.fingerHolesAt(t/2, t * 2, self.PlateVisibleHeight + t * 8 + self.Margin)
-            self.fingerHolesAt(self.PlateVisibleWidth + t*9.5 + self.Margin, t * 2, self.PlateVisibleHeight + t * 8 + self.Margin)
-            self.fingerHolesAt(t, self.edges["s"].endwidth() - t*2.5, t * 8 + self.PlateVisibleWidth + self.Margin, angle=0)
+        if self.BoxStyle == "minimalist" :
+            if self.LockScrewDiameter > 0 :
+                self.fingerHolesAt(t*1.5, t*4, self.PlateVisibleHeight/2 + t * 0.5 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.fingerHolesAt(t*1.5, self.PlateVisibleHeight/2 + t * 4.5 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 0.5 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.hole(t*1.5, self.PlateVisibleHeight/2 + t * 4.5 + self.Margin/2, self.LockScrewDiameter/2)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*6.5 + self.Margin, t*4, self.PlateVisibleHeight/2 + t * 0.5 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*6.5 + self.Margin, self.PlateVisibleHeight/2 + t * 4.5 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 0.5 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.hole(self.PlateVisibleWidth + t*6.5 + self.Margin, self.PlateVisibleHeight/2 + t * 4.5 + self.Margin/2, self.LockScrewDiameter/2)
+            else :
+                self.fingerHolesAt(t*1.5, t * 3.5, self.PlateVisibleHeight + t * 1 + self.Margin)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*6.5 + self.Margin, t * 3.5, self.PlateVisibleHeight + t * 1 + self.Margin)
         else:
             if self.LockScrewDiameter > 0 :
-                self.fingerHolesAt(t/2, 0, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2 - self.LockScrewDiameter/2)
-                self.fingerHolesAt(t/2, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2 - self.LockScrewDiameter/2)
-                self.hole(t/2, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2, self.LockScrewDiameter/2)
-                self.fingerHolesAt(self.PlateVisibleWidth + t*9.5 + self.Margin, -0, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2 - self.LockScrewDiameter/2)
-                self.fingerHolesAt(self.PlateVisibleWidth + t*9.5 + self.Margin, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2 - self.LockScrewDiameter/2)
-                self.hole(self.PlateVisibleWidth + t*9.5 + self.Margin, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2, self.LockScrewDiameter/2)
+                self.fingerHolesAt(t*1.5, t*3, self.PlateVisibleHeight/2 + t * 4.5 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.fingerHolesAt(t*1.5, self.PlateVisibleHeight/2 + t * 6.5 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.hole(t*1.5, self.PlateVisibleHeight/2 + t * 6.5 + self.Margin/2, self.LockScrewDiameter/2)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*10.5 + self.Margin, t*3, self.PlateVisibleHeight/2 + t * 4.5 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*10.5 + self.Margin, self.PlateVisibleHeight/2 + t * 6.5 + self.Margin/2 + self.LockScrewDiameter/2, self.PlateVisibleHeight/2 + t * 2.5 + self.Margin/2 - self.LockScrewDiameter/2)
+                self.hole(self.PlateVisibleWidth + t*10.5 + self.Margin, self.PlateVisibleHeight/2 + t * 6.5 + self.Margin/2, self.LockScrewDiameter/2)
             else :
-                self.fingerHolesAt(t/2, - t * 1.5, self.PlateVisibleHeight + t * 5 + self.Margin)
-                self.fingerHolesAt(self.PlateVisibleWidth + t*9.5 + self.Margin, - t * 1.5, self.PlateVisibleHeight + t * 5 + self.Margin)
+                self.fingerHolesAt(t*1.5, + t * 4, self.PlateVisibleHeight + t * 5 + self.Margin)
+                self.fingerHolesAt(self.PlateVisibleWidth + t*10.5 + self.Margin, t * 4, self.PlateVisibleHeight + t * 5 + self.Margin)
+        # electronic compartment top attachement
+        if self.BoxStyle == "minimalist" :
+            self.fingerHolesAt(t*2, self.edges["s"].endwidth() + self.PlateVisibleHeight + self.Margin + t*1.5, t * 4 + self.PlateVisibleWidth + self.Margin, angle=0)
+        else :
+            self.fingerHolesAt(t*2, self.edges["s"].endwidth() + self.PlateVisibleHeight + self.Margin + t*5.5, t * 8 + self.PlateVisibleWidth + self.Margin, angle=0)
         # for each line, make a hole
         for line in self.BackExtraHoles.split("\n") :
             holeParams=line.split(" ")
             # rectangular hole
             if line[0] == "R" :
-                self.rectangularHole(float(holeParams[1]), float(holeParams[2]), float(holeParams[3]), float(holeParams[4]))
+                self.rectangularHole(float(holeParams[1]) + t*2, float(holeParams[2]) + self.edges["s"].endwidth(), float(holeParams[3]), float(holeParams[4]))
             # round hole
             elif line[0] == "C" :
-                self.hole(float(holeParams[1]), float(holeParams[2]), float(holeParams[3])/2)
+                self.hole(float(holeParams[1]) + t*2, float(holeParams[2]) + self.edges["s"].endwidth(), float(holeParams[3])/2)
 
+    def frontBackPlate(self, x, h, isFront, move=None, label=""):
+        t = self.thickness
+        if self.move(x + t*4, h + t*4, move, True):
+            return
+        # holes callbacks
+        if isFront :
+            self.frontExtraHoles()
+        else :
+            self.backExtraHoles()
+        # main shape
+        self.edge(t*2)
+        self.edges["š"](x)
+        self.polyline(t*2, 90, h + t * (3 if isFront else 2), [90, t], x + t*2, [90, t], h + t * (3 if isFront else 2), 90)
+        # move plate
+        self.move(x + t*4,h + t*4, move, label=label)
+    
     def render(self):
         t = self.thickness
         # define box inner depth
@@ -314,28 +375,25 @@ class NightLightBox(_TopEdge):
         self.rectangularWall(x, y, "ffff", callback=[lambda:self.railSlots(x, y)], move="up", label="bottom")
 
         # back
-        self.rectangularWall(x + t*2, h - t*3, "šEhE", callback=[lambda:self.backExtraHoles()], move="up", label="back")
+        self.frontBackPlate(x, h, False, move="up", label="back")
 
         # front and optional customizable front face
-        if self.BoxStyle == "extra customizable face" :
-            self.rectangularWall(x + t*2, h + t, "šE3E", callback=[lambda:self.frontExtraHoles()], move="up", label="front")
-            self.rectangularWall(x + t*2, h + t, "EEEE", callback=[lambda:self.rectangularHole(self.PlateVisibleWidth/2 + t*4 + self.Margin/2,self.PlateVisibleHeight/2 + t*4,self.PlateVisibleWidth, self.PlateVisibleHeight, color=Color.ANNOTATIONS),
-                                                                        lambda:self.rectangularHole(t*1.5, t*1.5, t, t),
-                                                                        lambda:self.rectangularHole(self.PlateVisibleWidth/2 + t*4 + self.Margin/2, t*1.5, t, t),
-                                                                        lambda:self.rectangularHole(self.PlateVisibleHeight + t*6.5 + self.Margin, t*1.5, t, t)], move="up", label="customizable face")
-            self.rectangularWall(t*2, t, move="up")
-            self.rectangularWall(t*2, t, move="up")
-        elif self.BoxStyle == "minimalist" :
-            self.rectangularWall(x + t*2, h, "šEEE", callback=[lambda:self.frontExtraHoles()], move="up", label="front")
+        if self.BoxStyle == "minimalist" :
+            self.frontBackPlate(x, h, True, move="up", label="front")
         else:
-            self.rectangularWall(x + t*2, h + t, "šEEE", callback=[lambda:self.frontExtraHoles()], move="up", label="front")
-
+            self.frontBackPlate(x, h, True, move="up", label="front")
+        if self.BoxStyle == "extra customizable face" :
+            self.rectangularWall(x + t*2, h, "EEEE", callback=[lambda:self.rectangularHole(self.PlateVisibleWidth/2 + t*5 + self.Margin/2,self.PlateVisibleHeight/2 + t*5,self.PlateVisibleWidth, self.PlateVisibleHeight, self.WindowCorner),
+                                                                        lambda:self.rectangularHole(t*2.5, t*4.5, t, t),
+                                                                        lambda:self.rectangularHole(self.PlateVisibleWidth/2 + t*5 + self.Margin/2, t*0.5, t, t),
+                                                                        lambda:self.rectangularHole(self.PlateVisibleHeight + t*5.5 + self.Margin, t*4.5, t, t)
+                                                                        ], move="up", label="customizable face")
+            self.rectangularWall(t*2, t, move="up")
+            self.rectangularWall(t*2, t, move="up")
+            self.rectangularWall(t*2, t, move="up")
+        
         # electronics compartment top
         self.elecCompartmentTop(move="up", label="elec. comp.")
-
-        # difuser guides
-        self.rectangularWall(t*2, t, "eeee", move="up", label="guide")
-        self.rectangularWall(t*2, t, "eeee", move="up", label="guide")
 
         # top / lid
         self.drawLid(y - t, x, "i")
