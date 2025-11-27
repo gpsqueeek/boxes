@@ -85,6 +85,9 @@ class NightLightBox(_TopEdge):
             "--LockScrewDiameter",  action="store", type=float, default=0.0,
             help="Diameter of the screw holes in mm (set to 0 for no screws)")
         ScrewsLocking_group.add_argument(
+            "--LockScrewHeadDiameter",  action="store", type=float, default=0.0,
+            help="Diameter of the screw head in mm (set to 0 for no head hole ; used for extra customizable face only)")
+        ScrewsLocking_group.add_argument(
             "--LockScrewLength",  action="store", type=float, default=16.0,
             help="Length of the locking screws in mm")
         ScrewsLocking_group.add_argument(
@@ -331,6 +334,16 @@ class NightLightBox(_TopEdge):
             elif line[0] == "C" :
                 self.hole(float(holeParams[1]) + t*2, float(holeParams[2]) + self.edges["s"].endwidth(), float(holeParams[3])/2)
 
+    def extraFaceHoles(self):
+        t = self.thickness
+        self.rectangularHole(self.PlateVisibleWidth/2 + t*5 + self.Margin/2,self.PlateVisibleHeight/2 + t*5,self.PlateVisibleWidth, self.PlateVisibleHeight, self.WindowCorner)
+        self.rectangularHole(t*4.5, t*2.5, t, t)
+        self.rectangularHole(self.PlateVisibleWidth + t*5.5 + self.Margin, t*2.5, t, t)
+        self.rectangularHole(self.PlateVisibleWidth/2 + self.Margin/2 + t*5, self.PlateVisibleHeight + t*7.5 + self.Margin, t, t)
+        if self.LockScrewHeadDiameter > 0 :
+            self.hole(t*0.5, self.PlateVisibleHeight/2 + t * 5 + self.Margin/2, self.LockScrewHeadDiameter/2)
+            self.hole(self.PlateVisibleWidth + t*9.5 + self.Margin, self.PlateVisibleHeight/2 + t * 5 + self.Margin/2, self.LockScrewHeadDiameter/2)
+
     def frontBackPlate(self, x, h, isFront, move=None, label=""):
         t = self.thickness
         if self.move(x + t*4, h + t*4, move, True):
@@ -384,11 +397,7 @@ class NightLightBox(_TopEdge):
         else:
             self.frontBackPlate(x, h, True, move="up", label="front")
         if self.BoxStyle == "extra customizable face" :
-            self.rectangularWall(x + t*2, h, "EEEE", callback=[lambda:self.rectangularHole(self.PlateVisibleWidth/2 + t*5 + self.Margin/2,self.PlateVisibleHeight/2 + t*5,self.PlateVisibleWidth, self.PlateVisibleHeight, self.WindowCorner),
-                                                                        lambda:self.rectangularHole(t*2.5, t*4.5, t, t),
-                                                                        lambda:self.rectangularHole(self.PlateVisibleWidth/2 + t*5 + self.Margin/2, t*0.5, t, t),
-                                                                        lambda:self.rectangularHole(self.PlateVisibleHeight + t*5.5 + self.Margin, t*4.5, t, t)
-                                                                        ], move="up", label="customizable face")
+            self.rectangularWall(x + t*2, h, "EEEE", callback=[lambda:self.extraFaceHoles()], move="up", label="customizable face")
             self.rectangularWall(t*2, t, move="up")
             self.rectangularWall(t*2, t, move="up")
             self.rectangularWall(t*2, t, move="up")
