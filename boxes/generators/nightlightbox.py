@@ -233,11 +233,11 @@ class NightLightBox(_TopEdge):
         self.edges["f"](t*2)
         self.corner(90)
         # top
-        self.polyline(self.InterPlateSpacing - self.Margin, 90)
+        self.polyline(self.InterPlateSpacing - self.Margin - t, [90, t])
         for i in range(self.WoodPlatesCount):
-            self.polyline(t + self.Margin, -90, self.WoodPlateThickness + self.Margin, -90,
-                        t + self.Margin, 90, self.InterPlateSpacing - self.Margin, 90)
-        self.polyline(t + self.Margin, -90, self.DiffuserPlateThickness + self.Margin, -90,
+            self.polyline(t*0 + self.Margin, -90, self.WoodPlateThickness + self.Margin, -90,
+                        t*0 + self.Margin, [90, t], self.InterPlateSpacing - self.Margin - t*2, [90, t])
+        self.polyline(t*0 + self.Margin, -90, self.DiffuserPlateThickness + self.Margin, -90,
                         t + self.Margin, 90, t - self.Margin/2, 90)
         # left side
         self.polyline(t*2, 90)
@@ -275,7 +275,8 @@ class NightLightBox(_TopEdge):
                 self.fingerHolesAt(self.PlateVisibleWidth + t*10.5 + self.Margin, t * 4, self.PlateVisibleHeight + t * 8 + self.Margin)
         # holes for rails attachement #TODO
         if self.BoxStyle == "minimalist" :
-            a=1
+            self.fingerHolesAt(t*3.5, self.edges["s"].endwidth(), t*2)
+            self.fingerHolesAt(self.PlateVisibleWidth + t*4.5 + self.Margin, self.edges["s"].endwidth(), t*2)
         else :
             self.fingerHolesAt(t*3.5, self.edges["s"].endwidth(), t*2)
             self.fingerHolesAt(self.PlateVisibleWidth + t*8.5 + self.Margin, self.edges["s"].endwidth(), t*2)
