@@ -25,8 +25,8 @@ class NightLightBox(_TopEdge):
     The box offers thte possibility to be either definitively mounted (glued or forced in), or screwed
     (if the LockScrewDiameter is more than 0 mm).
     For assembling the box, please follow the following steps:
-    1. Insert the rails in the bottom plate
-    2. Insert the diffuser plate
+    1. Insert the rails in the duffuser plate
+    2. Insert the diffuser plate and the rails in the bottom plate
     3. Insert one side
     4. Insert the electronics comparment top in the side
     5. Add (and glue if needed) the hinge rings to the lid top and insert it in the side
@@ -100,15 +100,18 @@ class NightLightBox(_TopEdge):
     def screwAttachement (self):
         self.polyline(0, 90, self.thickness, 90, self.LockNutWidth/2 - self.LockScrewDiameter/2, -90,
                         self.LockNutThickness, -90, self.LockNutWidth/2 - self.LockScrewDiameter/2, 90,
-                        self.LockScrewLength - self.LockNutThickness - self.thickness, -90, self.LockScrewDiameter, -90,
-                        self.LockScrewLength - self.LockNutThickness - self.thickness, 90, self.LockNutWidth/2 - self.LockScrewDiameter/2, -90,
+                        self.LockScrewLength - self.LockNutThickness - self.thickness*2, -90, self.LockScrewDiameter, -90,
+                        self.LockScrewLength - self.LockNutThickness - self.thickness*2, 90, self.LockNutWidth/2 - self.LockScrewDiameter/2, -90,
                         self.LockNutThickness, -90, self.LockNutWidth/2 - self.LockScrewDiameter/2, 90, self.thickness, 90)
 
-    def railSlots(self, xSize, ySize):
-        # to be updated
+    def BottomExtraHoles(self, xSize, ySize):
         t = self.thickness
-        self.fingerHolesAt(t*1.5, self.InterPlateSpacing - t - self.Margin/2, t*2 + self.DiffuserPlateThickness + (self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount)
-        self.fingerHolesAt(xSize - (t*1.5), self.InterPlateSpacing - t - self.Margin/2, t*2 + self.DiffuserPlateThickness + (self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount)
+        # rails finger holes
+        self.fingerHolesAt(t*1.5, 0, (self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount + self.InterPlateSpacing)
+        self.fingerHolesAt(xSize - (t*1.5), 0, (self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount + self.InterPlateSpacing)
+        # diffuser attachement holes
+        self.rectangularHole(t*1.5, (self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount + self.InterPlateSpacing + self.DiffuserPlateThickness/2, t, self.DiffuserPlateThickness)
+        self.rectangularHole(xSize - (t*1.5), (self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount + self.InterPlateSpacing + self.DiffuserPlateThickness/2, t, self.DiffuserPlateThickness)
 
     def woodPlate(self, move=None, label=""):
         t = self.thickness
@@ -141,45 +144,28 @@ class NightLightBox(_TopEdge):
         self.polyline(t + self.Margin/2, -90,
                         self.PlateVisibleHeight + t*(2 if self.BoxStyle == "minimalist" else 6) + self.Margin, 90)
         # move plate
-        self.move(self.PlateVisibleWidth + t*(6 if self.BoxStyle == "minimalist" else 10), self.PlateVisibleHeight + t*(4 if self.BoxStyle == "minimalist" else 8), move, label=label)
+        self.move(self.PlateVisibleWidth + t*(6 if self.BoxStyle == "minimalist" else 10), self.PlateVisibleHeight + t*(6 if self.BoxStyle == "minimalist" else 10), move, label=label)
 
     def diffuserPlate(self, move=None, label=""):
         t = self.thickness
         if self.move(self.PlateVisibleWidth + t*(6 if self.BoxStyle == "minimalist" else 10), self.PlateVisibleHeight + t*(4 if self.BoxStyle == "minimalist" else 8), move, True):
             return
+        self.moveTo(0, t)
+        self.fingerHolesAt(t*1.5, 0, t*2)
+        self.fingerHolesAt(self.PlateVisibleWidth + self.Margin + t*(2.5 if self.BoxStyle == "minimalist" else 6.5), 0, t*2)
         # bottom
-        self.polyline(t - self.Margin, 90, t + self.Margin, -90, t + self.Margin, -90, t + self.Margin, 90,
-                        self.PlateVisibleWidth + t*(0 if self.BoxStyle == "minimalist" else 4) - self.Margin, 90,
-                        t + self.Margin, -90, t + self.Margin, -90, t + self.Margin, 90, t - self.Margin, 90)
+        self.polyline(t, -90, t, 90, t, 90, t, -90,
+                        self.PlateVisibleWidth + t*(0 if self.BoxStyle == "minimalist" else 4) + self.Margin, -90,
+                        t, 90, t, 90, t, -90, t, 90)
         # right side
-        self.edge(self.PlateVisibleHeight + t*(0 if self.BoxStyle == "minimalist" else 4) - self.Margin)
-        self.edges["f"](t * 4)
-        self.corner(90)
+        self.polyline(self.PlateVisibleHeight + t*(2 if self.BoxStyle == "minimalist" else 6), -90, t, 90, t, 90, t, -90, t, 90)
         # top
-        self.polyline(self.PlateVisibleWidth + t*(4 if self.BoxStyle == "minimalist" else 8) - self.Margin, 90)
+        self.polyline(self.PlateVisibleWidth + t*(4 if self.BoxStyle == "minimalist" else 8) + self.Margin, 90)
         # left side
-        self.edges["f"](t * 4)
-        self.polyline(self.PlateVisibleHeight + t*(0 if self.BoxStyle == "minimalist" else 4) - self.Margin, 90)
+        self.polyline(t, -90, t, 90, t, 90, t, -90)
+        self.polyline(self.PlateVisibleHeight + t*(2 if self.BoxStyle == "minimalist" else 6), 90)
         # move plate
-        self.move(self.PlateVisibleWidth + t*(6 if self.BoxStyle == "minimalist" else 10), self.PlateVisibleHeight + t*(4 if self.BoxStyle == "minimalist" else 8), move, label=label)
-
-    def elecCompartmentTop(self, move=None, label=""):
-        t = self.thickness
-        if self.move(t * 4 + self.PlateVisibleWidth + self.Margin, self.BackgroundDepth + t, move, True):
-            return
-        # bottom
-        self.polyline(t * (4 if self.BoxStyle == "minimalist" else 8) + self.PlateVisibleWidth + self.Margin, 90)
-        # right side
-        self.edges["f"](self.BackgroundDepth)
-        self.corner(90)
-        # top
-        self.edges["f"](t * (4 if self.BoxStyle == "minimalist" else 8) + self.PlateVisibleWidth + self.Margin)
-        self.corner(90)
-        # left side
-        self.edges["f"](self.BackgroundDepth)
-        self.corner(90)
-        # move plate
-        self.move(t * 4 + self.PlateVisibleWidth + self.Margin, self.BackgroundDepth + t, move, label=label)
+        self.move(self.PlateVisibleWidth + t*(6 if self.BoxStyle == "minimalist" else 10), self.PlateVisibleHeight + t*(6 if self.BoxStyle == "minimalist" else 10), move, label=label)
 
     def side(self, ySize, hSize, move=None, label=""):
         t = self.thickness
@@ -188,11 +174,11 @@ class NightLightBox(_TopEdge):
             return
         # finger holes for background and elec compartment top
         if self.BoxStyle == "minimalist" :
-            self.fingerHolesAt(ySize - self.BackgroundDepth - self.DiffuserPlateThickness/2 - self.Margin/2, self.PlateVisibleHeight + t*4, t*4)
-            self.fingerHolesAt(ySize + t - self.BackgroundDepth - self.DiffuserPlateThickness, self.PlateVisibleHeight + t*5.5 + self.Margin, self.BackgroundDepth, angle=0)
+            self.rectangularHole(ySize - self.BackgroundDepth - self.DiffuserPlateThickness/2, self.PlateVisibleHeight + t*6.5, self.DiffuserPlateThickness, t)
+            self.fingerHolesAt(ySize - self.BackgroundDepth, self.PlateVisibleHeight + t*5.5 + self.Margin, self.BackgroundDepth, angle=0)
         else :
-            self.fingerHolesAt(ySize - self.BackgroundDepth - self.DiffuserPlateThickness/2 - self.Margin/2, self.PlateVisibleHeight + t*8, t*4)
-            self.fingerHolesAt(ySize + t - self.BackgroundDepth - self.DiffuserPlateThickness, self.PlateVisibleHeight + t*9.5 + self.Margin, self.BackgroundDepth, angle=0)
+            self.rectangularHole(ySize - self.BackgroundDepth - self.DiffuserPlateThickness/2, self.PlateVisibleHeight + t*10.5, self.DiffuserPlateThickness, t)
+            self.fingerHolesAt(ySize - self.BackgroundDepth, self.PlateVisibleHeight + t*9.5 + self.Margin, self.BackgroundDepth, angle=0)
         # finger hole for background lock
         # bottom
         be(ySize)
@@ -230,20 +216,21 @@ class NightLightBox(_TopEdge):
         if self.move(self.WoodPlatesCount * (self.InterPlateSpacing + self.WoodPlateThickness) + self.DiffuserPlateThickness + t*2, t*3, move, True):
             return
         # bottom
-        self.edges["f"](t*2 + self.DiffuserPlateThickness + (self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount)
-        self.polyline(self.InterPlateSpacing - t - self.Margin/2, 90)
+        self.edges["f"]((self.InterPlateSpacing + self.WoodPlateThickness) * self.WoodPlatesCount + self.InterPlateSpacing)
+        self.corner(90)
         # right side
         self.edges["f"](t*2)
         self.corner(90)
         # top
-        self.polyline(self.InterPlateSpacing - self.Margin - t, [90, t])
+        self.edge(self.InterPlateSpacing - self.Margin/2 - t)
         for i in range(self.WoodPlatesCount):
-            self.polyline(t*0 + self.Margin, -90, self.WoodPlateThickness + self.Margin, -90,
-                        t*0 + self.Margin, [90, t], self.InterPlateSpacing - self.Margin - t*2, [90, t])
-        self.polyline(t*0 + self.Margin, -90, self.DiffuserPlateThickness + self.Margin, -90,
-                        t + self.Margin, 90, t - self.Margin/2, 90)
+            self.polyline(0, [90, t], t*0 + self.Margin, -90, self.WoodPlateThickness + self.Margin, -90,
+                        t*0 + self.Margin, [90, t], self.InterPlateSpacing - self.Margin - t*2, 0)
+        self.edge(t + self.Margin/2)
         # left side
-        self.polyline(t*2, 90)
+        self.corner(90)
+        self.edges["f"](t*2)
+        self.corner(90)
         # move plate
         self.move(self.WoodPlatesCount * (self.InterPlateSpacing + self.WoodPlateThickness) + self.DiffuserPlateThickness + t*2, t*3, move, label=label)
 
@@ -363,7 +350,7 @@ class NightLightBox(_TopEdge):
     def render(self):
         t = self.thickness
         # define box inner depth
-        y = self.BackgroundDepth + self.DiffuserPlateThickness + (self.WoodPlateThickness + self.InterPlateSpacing) * self.WoodPlatesCount + self.InterPlateSpacing #+ t*2
+        y = self.BackgroundDepth + self.DiffuserPlateThickness + (self.WoodPlateThickness + self.InterPlateSpacing) * self.WoodPlatesCount + self.InterPlateSpacing
         if self.BoxStyle == "minimalist" :
             # define box inner width
             x = t * 4 + self.PlateVisibleWidth + self.Margin
@@ -386,7 +373,7 @@ class NightLightBox(_TopEdge):
         self.rail(move="up mirror", label="rail")
 
         # floor
-        self.rectangularWall(x, y, "ffff", callback=[lambda:self.railSlots(x, y)], move="up", label="bottom")
+        self.rectangularWall(x, y, "ffff", callback=[lambda:self.BottomExtraHoles(x, y)], move="up", label="bottom")
 
         # back
         self.frontBackPlate(x, h, False, move="up", label="back")
@@ -403,7 +390,7 @@ class NightLightBox(_TopEdge):
             self.rectangularWall(t*2, t, move="up")
         
         # electronics compartment top
-        self.elecCompartmentTop(move="up", label="elec. comp.")
+        self.rectangularWall(t * (4 if self.BoxStyle == "minimalist" else 8) + self.PlateVisibleWidth + self.Margin, self.BackgroundDepth,"efff", move="up", label="elec. comp.")
 
         # top / lid
         self.drawLid(y - t, x, "i")
